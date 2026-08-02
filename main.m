@@ -2,6 +2,8 @@ clear;
 clc;
 close all;
 
+addpath(genpath('src'));
+
 params = defaultParameters();
 
 params.plotResults = true;

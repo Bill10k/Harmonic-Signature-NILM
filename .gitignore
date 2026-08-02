@@ -1,0 +1,15 @@
+# MATLAB
+*.asv
+*.autosave
+*.slxc
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# MATLAB generated
+*.mex*
+*.fig~
+
+# Temporary
+*.tmp

@@ -45,7 +45,7 @@ Signal Generation
 
 Disturbances
 
-- Tetteh
+- Prince T. Djangmah
 
 Preprocessing
 

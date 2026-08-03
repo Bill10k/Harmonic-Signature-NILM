@@ -1,4 +1,4 @@
-function predictions = classifyLoad(features)
+function [predictions, predictionMatrix] = classifyLoad(features)
 %CLASSIFYLOAD Rule-based appliance classifier.
 %
 % INPUT:
@@ -21,12 +21,18 @@ function predictions = classifyLoad(features)
     numWindows = numel(features);
 
     predictions = repmat(struct(), numWindows, 1);
+    predictionMatrix = false(numWindows,4);
 
     for k = 1:numWindows
 
         [status, ~] = classifyWindow(features(k), applianceLib);
 
         predictions(k) = status;
+        predictionMatrix(k,:) = [ ...
+            status.Kettle,...
+            status.Refrigerator,...
+            status.LEDbank,...
+            status.LaptopCharger];
 
         if k > 1
 
@@ -70,7 +76,7 @@ function applianceLib = createApplianceLibrary()
 
     %% LED
 
-    applianceLib.LED.THD_min = 20;
+    applianceLib.LEDbank.THD_min = 20;
     applianceLib.LEDbank.H3ratio_min = 0.20;
     applianceLib.LEDbank.H5ratio_min = 0.10;
     applianceLib.LEDbank.RMS_min = 0.10;

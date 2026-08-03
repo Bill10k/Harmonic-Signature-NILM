@@ -5,6 +5,8 @@ clc;
 clear;
 close all;
 
+addpath(genpath('src'));
+
 %% Project Configuration
 
 params = struct();
@@ -23,6 +25,8 @@ sim = model_four_appliances(params);
 
 aggregateCurrent = sim.aggregateClean;
 
+groundTruth = sim.windowStates;
+
 %% Disturbance Module
 
 disturbedSignal = applyDisturbances(aggregateCurrent, params);
@@ -31,20 +35,31 @@ disturbedSignal = applyDisturbances(aggregateCurrent, params);
 
 filteredSignal = applyFIRFilter(disturbedSignal, params);
 
-%% FFT
+%% FFT + Feature Extraction (Window by Window)
 
-[frequency, magnitude] = performFFT(filteredSignal, params);
+numWindows = size(sim.windowStates,1);
 
-%% Feature Extraction
+features = repmat(struct(), numWindows, 1);
 
-features = extractFeatures(frequency, magnitude);
+for k = 1:numWindows
+
+    startIdx = sim.windowStartSamples(k);
+    stopIdx  = sim.windowStopSamples(k);
+
+    signalWindow = filteredSignal(startIdx:stopIdx);
+
+    [frequency, magnitude] = performFFT(signalWindow, params);
+
+    features(k) = extractFeatures(frequency, magnitude);
+
+end
 
 %% Classification
 
-predictions = classifyLoad(features);
+[predictions, predictionMatrix] = classifyLoad(features);
 
 %% Evaluation
 
-results = evaluateSystem(sim.windowStates, predictions);
+results = evaluateSystem(sim.windowStates, predictionMatrix);
 
 disp(results)

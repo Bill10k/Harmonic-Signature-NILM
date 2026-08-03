@@ -15,26 +15,39 @@ function signal = addHarmonicDistortion(signal, params)
 %
 % PARAMS FIELDS USED (all optional, defaults shown):
 %   params.harmonics.enable        (default: true)
-%   params.harmonics.orders        harmonic orders to inject (default: 3)
+%   params.harmonics.orders        harmonic orders to inject
+%                                  (default: [5 7 11])
 %   params.harmonics.magnitudePct  fraction of the FUNDAMENTAL amplitude,
-%                                  per order (default: 0.05 -> 5% THD)
-%   params.harmonics.phaseDeg      phase in degrees per order (default: 0)
+%                                  per order (default: [0.06 0.045 0.025],
+%                                  chosen so the RMS-combined THD is
+%                                  ~7.9%, matching the report's ~8% THD
+%                                  figure -- see note below)
+%   params.harmonics.phaseDeg      phase in degrees per order (default: 0
+%                                  for each -- update if the report
+%                                  specifies exact phases)
 %
 % NOTE: orders/magnitudePct/phaseDeg must be the same length if more than
-% one harmonic is injected. Default targets the 3rd harmonic; this is a
-% deliberate design choice (stresses the LED bank's dominant harmonic) --
-% confirm with the team which harmonic(s) the report/slides describe
-% before final submission, since the target harmonic changes which
-% appliance's signature is most stressed.
+% one harmonic is injected.
+%
+% Default targets the 5th, 7th and 11th harmonics -- matching what the
+% team's report and slides currently describe (this stresses the laptop
+% charger's dominant harmonics, rather than the 3rd, which is the LED
+% bank's dominant harmonic and was this module's original default).
+% Total THD is combined as an RMS sum (sqrt(sum(magnitudePct.^2))), which
+% is the standard IEEE 519 definition, not a simple sum -- the per-order
+% split (6%/4.5%/2.5%) is a reasonable decreasing-with-order shape but
+% was not separately specified by the team; confirm the exact per-order
+% split against the assigned Group 3 parameter sheet once available, and
+% update here if it differs.
 %
     signal = signal(:);   % enforce column vector
 
     cfg = getFieldOrDefault(params, 'harmonics', struct());
 
     enable    = getFieldOrDefault(cfg, 'enable',       true);
-    orders    = getFieldOrDefault(cfg, 'orders',       3);
-    magPct    = getFieldOrDefault(cfg, 'magnitudePct', 0.05);
-    phaseDeg  = getFieldOrDefault(cfg, 'phaseDeg',     0);
+    orders    = getFieldOrDefault(cfg, 'orders',       [5 7 11]);
+    magPct    = getFieldOrDefault(cfg, 'magnitudePct', [0.06 0.045 0.025]);
+    phaseDeg  = getFieldOrDefault(cfg, 'phaseDeg',     [0 0 0]);
 
     if ~enable
         return;

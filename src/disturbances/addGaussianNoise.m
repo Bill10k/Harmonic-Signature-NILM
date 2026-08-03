@@ -3,24 +3,26 @@ function signal = addGaussianNoise(signal, params)
 %
 %   signal = addGaussianNoise(signal, params)
 %
-% Adds noise sized relative to the signal's own power via a target
-% signal-to-noise ratio (SNR) in dB, rather than a fixed absolute noise
-% level, so the noise scales sensibly whatever the aggregate current
-% amplitude turns out to be.
+% Adds noise sized relative to the signal's own power via a target SNR
+% in dB. Uses a FIXED random seed by default so results are reproducible
+% across runs -- the submission checklist requires the course team to be
+% able to rerun the analysis independently and get the same numbers.
+% The previous global random state is saved and restored afterwards, so
+% calling this does not disturb random behaviour elsewhere in the
+% pipeline.
 %
 % PARAMS FIELDS USED (all optional, defaults shown):
 %   params.noise.enable   (default: true)
-%   params.noise.snrDb    target SNR in dB (default: 30, moderate
-%                         background noise placeholder)
+%   params.noise.snrDb    target SNR in dB (default: 30)
+%   params.noise.seed     RNG seed for reproducibility (default: 20897245)
 %
-% NOTE: Update the default SNR once the group's assigned Supply
-% Disturbance Profile (noise level) is available.
-%
+    signal = signal(:);   % enforce column vector
 
     cfg = getFieldOrDefault(params, 'noise', struct());
 
     enable = getFieldOrDefault(cfg, 'enable', true);
     snrDb  = getFieldOrDefault(cfg, 'snrDb',  30);
+    seed   = getFieldOrDefault(cfg, 'seed',   20897245);
 
     if ~enable
         return;
@@ -32,7 +34,13 @@ function signal = addGaussianNoise(signal, params)
     snrLinear = 10^(snrDb / 10);
     noisePower = signalPower / snrLinear;
 
+    % Save current RNG state, seed deterministically, generate noise,
+    % then restore -- so this call doesn't affect random behaviour
+    % elsewhere in the pipeline (e.g. train/test splits).
+    previousState = rng;
+    rng(seed);
     noiseSignal = sqrt(noisePower) * randn(N, 1);
+    rng(previousState);
 
     signal = signal + noiseSignal;
 end

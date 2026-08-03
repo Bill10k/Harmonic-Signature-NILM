@@ -13,3 +13,10 @@ Thumbs.db
 
 # Temporary
 *.tmp
+
+# Generated results
+results_*.mat
+
+# Generated figures
+figures/results/
+figures/blind_*/

@@ -29,7 +29,17 @@ end
 cutoffHz = maxHarmonic * f0 + cutoffMarginHz;
 cutoffHz = min(cutoffHz, 0.9 * nyquist);   % stay safely below Nyquist
 
-if isfield(params, 'windowType')
+% Window used to design the FIR kernel.
+%
+% NOTE: this is a DIFFERENT window from the one applyWindow.m uses to cut
+% analysis frames. They serve different purposes and should not share a
+% setting: params.filterWindowType shapes the filter's frequency response,
+% while params.windowType shapes each analysis frame before its FFT.
+% params.windowType is only used here as a fallback for older parameter
+% structs that predate the split.
+if isfield(params, 'filterWindowType') && ~isempty(params.filterWindowType)
+    windowType = params.filterWindowType;
+elseif isfield(params, 'windowType') && ~isempty(params.windowType)
     windowType = params.windowType;
 else
     windowType = 'hamming';
